@@ -1,8 +1,18 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { JobDetails } from '../types';
 
+// Added by rch.
+const API_KEY = process.env.API_KEY;
+
+if (!API_KEY) {
+  throw new Error("API_KEY environment variable not set.");
+}
+
+const ai = new GoogleGenAI({ apiKey: API_KEY });
+
+
 // Lazily initialize the AI client to avoid crashing the app on load if API key is missing.
-let ai: GoogleGenAI | null = null;
+// let ai: GoogleGenAI | null = null;
 
 function getAiClient(): GoogleGenAI {
     if (ai) {
