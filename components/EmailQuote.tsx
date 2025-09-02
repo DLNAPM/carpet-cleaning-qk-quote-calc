@@ -34,8 +34,8 @@ export const EmailQuote: React.FC<EmailQuoteProps> = ({ jobDetails, dealResponse
         }
         if (!quoteRef.current) return;
 
-        if (!process.env.SMTP_SERVER || !process.env.SMTP_USERNAME || !process.env.SMTP_PASSWORD || !process.env.SMTP_PORT) {
-            setErrorMessage("SMTP is not configured. Please ensure SMTP_SERVER, SMTP_USERNAME, SMTP_PASSWORD, and SMTP_PORT are set as environment variables.");
+        if (!process.env.PUBLIC_SMTP_SERVER || !process.env.PUBLIC_SMTP_USERNAME || !process.env.PUBLIC_SMTP_PASSWORD || !process.env.PUBLIC_SMTP_PORT) {
+            setErrorMessage("SMTP is not configured. Please ensure PUBLIC_SMTP_SERVER, PUBLIC_SMTP_USERNAME, PUBLIC_SMTP_PASSWORD, and PUBLIC_SMTP_PORT are set as environment variables in your hosting provider.");
             setSendStatus('error');
             return;
         }
@@ -55,12 +55,12 @@ export const EmailQuote: React.FC<EmailQuoteProps> = ({ jobDetails, dealResponse
             const pdfBase64 = pdf.output('datauristring').split(',')[1];
 
             await Email.send({
-                Host: process.env.SMTP_SERVER,
-                Port: parseInt(process.env.SMTP_PORT, 10),
-                Username: process.env.SMTP_USERNAME,
-                Password: process.env.SMTP_PASSWORD,
+                Host: process.env.PUBLIC_SMTP_SERVER,
+                Port: parseInt(process.env.PUBLIC_SMTP_PORT, 10),
+                Username: process.env.PUBLIC_SMTP_USERNAME,
+                Password: process.env.PUBLIC_SMTP_PASSWORD,
                 To: email,
-                From: process.env.SMTP_USERNAME, // Sender email is often the same as the username
+                From: process.env.PUBLIC_SMTP_USERNAME, // Sender email is often the same as the username
                 Subject: subject,
                 Body: body,
                 Attachments: [
