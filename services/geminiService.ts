@@ -10,7 +10,7 @@ function getAiClient(): GoogleGenAI {
     }
     if (!process.env.API_KEY) {
         console.error("API_KEY environment variable not set. Gemini API calls will fail.");
-        throw new Error("The AI service is not configured. Please use the manual form.");
+        throw new Error("The Gemini API Key is not configured for this environment. Please use the manual form.");
     }
     ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     return ai;
