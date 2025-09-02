@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
   // FIX: Replaced process.cwd() with '.' to resolve a TypeScript typing issue where 'cwd' is not found on the 'Process' type. Vite resolves '.' relative to the config file, which is the project root, achieving the same result.
   const env = loadEnv(mode, '.', '');
   return {
-    plugins: [react()],
+    //plugins: [react()],
     resolve: {
       alias: {
         // Fix: __dirname is not available in ES modules by default.
