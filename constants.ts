@@ -1,0 +1,96 @@
+
+import type { Deal } from './types';
+
+export const PRICING = {
+    BASE_RATE: 140,
+    BASE_SQFT: 500,
+    ADDITIONAL_SQFT_RATE: 0.30,
+    DISTANCE_BASE_MILES: 20,
+    DISTANCE_RATE_PER_MILE: 1.50,
+    PET_TREATMENT_PER_ROOM: 50,
+    LARGE_ITEM_MOVE: 25,
+    SMALL_ITEM_MOVE: 10,
+    AREA_RUG_PER_SQFT: 1.50,
+    FLOOR_SURCHARGE: 25,
+    STAIN_SPOT: 5,
+    STAIN_GUARD_PER_ROOM: 40,
+    MEMBERSHIP_YEAR_COST: 150,
+    MEMBERSHIP_YEAR_DISCOUNT: 0.15,
+    MEMBERSHIP_6_MONTH_COST: 90,
+    MEMBERSHIP_6_MONTH_DISCOUNT: 0.10,
+    SOFA_CLEANING: 120,
+    LOVESEAT_CLEANING: 80,
+    ARMCHAIR_CLEANING: 50,
+};
+
+export const DEALS: Deal[] = [
+    {
+        id: 'bundle1',
+        title: 'Carpet + Rugs + Stain Guard Bundle',
+        description: '10% off when you bundle Carpet, Rugs, and Stain Guard services. Can be combined with Upholstery offers.',
+        requiresFollowUp: (details) => details.stainGuardRooms === 0,
+        followUpQuestion: 'You accepted stain-guard protection. How many rooms would you like to add stain guard to?',
+        followUpType: 'number',
+        followUpTarget: 'stainGuardRooms'
+    },
+    {
+        id: 'membership_upholstery',
+        title: 'Membership & Upholstery Deal',
+        description: 'Sign up for your monthly membership plan and book 2 future appointments that include Upholstery cleaning (Sofa or Love Seat) = $25.00 off. Discount applied on 2nd estimate.',
+        requiresFollowUp: (details) => details.sofas === 0 && details.loveSeats === 0 && details.armchairs === 0,
+        followUpQuestion: 'You accepted an upholstery deal. Please specify the items to be cleaned.',
+        followUpType: 'upholstery',
+    },
+    {
+        id: 'bundle2',
+        title: 'The Ultimate Clean Package',
+        description: '2 location Carpet Clean + 2 Pet treatment + 2 Upholstery cleaning + 2 Rugs + 2 Stain Guard rooms = 25% off. Cannot be combined with other offers.',
+        requiresFollowUp: true,
+        followUpQuestion: 'Please provide any additional details needed to apply this deal:',
+        followUpType: 'text',
+    },
+    {
+        id: 'social_media',
+        title: 'Social Media Share',
+        description: 'Share one of our posts on your social media, tag us same day of service and message us the word "Done" = $10 off.',
+        requiresFollowUp: true,
+        followUpQuestion: 'Please provide any additional details for this deal:',
+        followUpType: 'text',
+    },
+    {
+        id: 'third_time_special',
+        title: '3rd-Time Special',
+        description: 'We’re giving you an extra 100 sq. ft. FREE with our Base price $140 3rd-time carpet cleaning special! That’s up to 600 sq. ft. of clean, cozy carpet!',
+        requiresFollowUp: true,
+        followUpQuestion: 'Please provide any additional details for this deal:',
+        followUpType: 'text',
+    },
+    {
+        id: 'bundle3',
+        title: 'Pet & Upholstery Bundle',
+        description: 'Carpet + Any Pet treatment (spot or room) + Upholstery cleaning (Sofa and Love Seat) + 2 Rugs + Stain Guard = $55.55 off',
+        requiresFollowUp: false,
+    },
+    {
+        id: 'referral',
+        title: 'Refer-a-Friend',
+        description: 'Refer someone and receive $20.00 off and the person you referred receives $20.00 off.',
+        requiresFollowUp: true,
+        followUpQuestion: 'Please provide any additional details for the referral:',
+        followUpType: 'text',
+    },
+    {
+        id: 'bundle4',
+        title: 'Premium Protection Bundle',
+        description: 'Any Pet treatment + Upholstery cleaning (Sofa or Love Seat) + Rugs + Stain Guard = 15% off. Cannot be combined with other offers.',
+        requiresFollowUp: false,
+    },
+    {
+        id: 'two_appointments',
+        title: 'Book 2 Appointments',
+        description: 'Book 2 appointments = 10% on 2nd appointment. Discount applied on 2nd estimate.',
+        requiresFollowUp: true,
+        followUpQuestion: 'Please provide any additional details for booking the second appointment:',
+        followUpType: 'text',
+    },
+];

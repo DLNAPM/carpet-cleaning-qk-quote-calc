@@ -1,0 +1,7 @@
+{
+  "name": "Carpet Cleaning Quick Quote Calculator",
+  "description": "A quick quote calculator for carpet cleaning services, featuring voice and text input, detailed job customization, and dynamic quote generation with upsell and discount options.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
