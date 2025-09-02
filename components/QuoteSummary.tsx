@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import type { JobDetails, DealResponse } from '../types';
 import { PRICING, DEALS } from '../constants';
@@ -8,13 +7,14 @@ interface QuoteSummaryProps {
     dealResponses: DealResponse[];
     onNext: () => void;
     onBack: () => void;
+    isPreview?: boolean;
 }
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 };
 
-export const QuoteSummary: React.FC<QuoteSummaryProps> = ({ jobDetails, dealResponses, onNext, onBack }) => {
+export const QuoteSummary: React.FC<QuoteSummaryProps> = ({ jobDetails, dealResponses, onNext, onBack, isPreview = false }) => {
     const calculation = useMemo(() => {
         let subtotal = 0;
         const breakdown: { item: string, cost: number }[] = [];
@@ -202,10 +202,12 @@ export const QuoteSummary: React.FC<QuoteSummaryProps> = ({ jobDetails, dealResp
                 </div>
             </div>
 
-            <div className="flex justify-between mt-8">
-                <button onClick={onBack} className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">Back</button>
-                <button onClick={onNext} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">Email Quote</button>
-            </div>
+            {!isPreview && (
+                <div className="flex justify-between mt-8">
+                    <button onClick={onBack} className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">Back</button>
+                    <button onClick={onNext} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">Email Quote</button>
+                </div>
+            )}
         </div>
     );
 };
