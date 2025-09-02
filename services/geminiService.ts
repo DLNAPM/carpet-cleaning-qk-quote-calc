@@ -1,16 +1,25 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import type { JobDetails } from '../types';
 
-if (!process.env.API_KEY) {
-  console.warn("API_KEY environment variable not set. Gemini API calls will fail.");
-}
+// Lazily initialize the AI client to avoid crashing the app on load if API key is missing.
+let ai: GoogleGenAI | null = null;
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+function getAiClient(): GoogleGenAI {
+    if (ai) {
+        return ai;
+    }
+    if (!process.env.API_KEY) {
+        console.error("API_KEY environment variable not set. Gemini API calls will fail.");
+        throw new Error("The AI service is not configured. Please use the manual form.");
+    }
+    ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    return ai;
+}
 
 export const parseJobDescription = async (description: string): Promise<Partial<JobDetails>> => {
     try {
-        const response = await ai.models.generateContent({
+        const client = getAiClient();
+        const response = await client.models.generateContent({
             model: "gemini-2.5-flash",
             contents: `Parse the following carpet cleaning job description and extract the details into a structured JSON object. If a detail is not mentioned, omit the key or use a sensible default (0 for numbers, 1 for floors, 'first-time' for clientType, empty array for areaRugs). Description: "${description}"`,
             config: {
@@ -57,6 +66,9 @@ export const parseJobDescription = async (description: string): Promise<Partial<
 
     } catch (error) {
         console.error("Error parsing job description with Gemini:", error);
+        if (error instanceof Error && (error.message.includes("API Key") || error.message.includes("configured"))) {
+            throw error; // Re-throw the specific error for the UI
+        }
         throw new Error("Could not understand the job description. Please fill out the form manually.");
     }
 };
