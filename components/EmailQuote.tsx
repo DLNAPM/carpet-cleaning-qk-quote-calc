@@ -1,20 +1,16 @@
 import React, { useState, useRef } from 'react';
-import emailjs from '@emailjs/browser';
 import { QuoteSummary } from './QuoteSummary';
 import type { JobDetails, DealResponse } from '../types';
 
+// SECURITY WARNING: Exposing SMTP credentials in client-side code is a significant security risk.
+// Anyone can view your website's source code and steal these credentials.
+// For production applications, it is strongly recommended to use a backend service
+// to handle email sending, keeping your credentials secure on a server.
+// This implementation proceeds based on a specific user request but is not a recommended practice.
+
 declare const jspdf: any;
 declare const html2canvas: any;
-
-// IMPORTANT: Replace with your EmailJS credentials
-// 1. Create a free account at https://www.emailjs.com/
-// 2. Add a new service (e.g., Gmail).
-// 3. Create a new email template. Inside the template, you can use variables like {{to_email}}, {{subject}}, and {{body}}.
-// 4. In the template's "Attachments" tab, add an attachment. Use `{{pdf_attachment}}` as the content.
-// 5. Find your Service ID, Template ID, and Public Key (under Account > API Keys) and paste them below.
-const EMAILJS_SERVICE_ID = 'YOUR_SERVICE_ID';
-const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
-const EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
+declare const Email: any; // SMTPJS is loaded from a script tag in index.html
 
 interface EmailQuoteProps {
     jobDetails: JobDetails;
@@ -38,8 +34,8 @@ export const EmailQuote: React.FC<EmailQuoteProps> = ({ jobDetails, dealResponse
         }
         if (!quoteRef.current) return;
 
-        if (EMAILJS_SERVICE_ID === 'YOUR_SERVICE_ID' || EMAILJS_TEMPLATE_ID === 'YOUR_TEMPLATE_ID' || EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY') {
-            setErrorMessage("EmailJS is not configured. Please add your credentials in the EmailQuote.tsx file.");
+        if (!process.env.SMTP_SERVER || !process.env.SMTP_USERNAME || !process.env.SMTP_PASSWORD || !process.env.SMTP_PORT) {
+            setErrorMessage("SMTP is not configured. Please ensure SMTP_SERVER, SMTP_USERNAME, SMTP_PASSWORD, and SMTP_PORT are set as environment variables.");
             setSendStatus('error');
             return;
         }
@@ -58,18 +54,27 @@ export const EmailQuote: React.FC<EmailQuoteProps> = ({ jobDetails, dealResponse
             pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width, canvas.height);
             const pdfBase64 = pdf.output('datauristring').split(',')[1];
 
-            const templateParams = {
-                to_email: email,
-                subject: subject,
-                body: body,
-                pdf_attachment: pdfBase64,
-            };
-            
-            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams, EMAILJS_PUBLIC_KEY);
+            await Email.send({
+                Host: process.env.SMTP_SERVER,
+                Port: parseInt(process.env.SMTP_PORT, 10),
+                Username: process.env.SMTP_USERNAME,
+                Password: process.env.SMTP_PASSWORD,
+                To: email,
+                From: process.env.SMTP_USERNAME, // Sender email is often the same as the username
+                Subject: subject,
+                Body: body,
+                Attachments: [
+                    {
+                        name: "quote.pdf",
+                        data: pdfBase64,
+                    },
+                ],
+            });
+
             setSendStatus('success');
         } catch (error: any) {
-            console.error("Failed to send email:", error);
-            setErrorMessage(error?.text || 'An unknown error occurred while sending the email.');
+            console.error("Failed to send email via SMTP:", error);
+            setErrorMessage(error.toString() || 'An unknown error occurred while sending the email.');
             setSendStatus('error');
         }
     };
@@ -89,7 +94,7 @@ export const EmailQuote: React.FC<EmailQuoteProps> = ({ jobDetails, dealResponse
         <div className="space-y-8">
             <h3 className="text-2xl font-bold text-gray-800">Email Quote to Customer</h3>
             <p className="text-gray-600">
-                This will generate a PDF of the quote and send it to the customer using a secure email service.
+                This will generate a PDF of the quote and send it to the customer using your configured SMTP service.
             </p>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
