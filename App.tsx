@@ -9,8 +9,9 @@ import { EmailQuote } from './components/EmailQuote';
 import { Spinner } from './components/common/Spinner';
 import { useSpeech } from './hooks/useSpeech';
 import { parseJobDescription } from './services/geminiService';
-import type { JobDetails, DealResponse, AppState, AppAction } from './types';
-import { DEALS } from './constants';
+import { parseConfigFile } from './services/configService';
+import type { JobDetails, DealResponse, AppState, AppAction, Tip } from './types';
+import { DEALS, PRICING } from './constants';
 
 const initialState: AppState = {
     step: 'description',
@@ -35,6 +36,9 @@ const initialState: AppState = {
     dealResponses: DEALS.map(deal => ({ id: deal.id, accepted: false, details: '' })),
     isLoading: false,
     error: null,
+    pricing: PRICING,
+    deals: DEALS,
+    tips: [],
 };
 
 function appReducer(state: AppState, action: AppAction): AppState {
@@ -52,7 +56,24 @@ function appReducer(state: AppState, action: AppAction): AppState {
         case 'SET_ERROR':
             return { ...state, error: action.payload, isLoading: false };
         case 'RESET':
-            return initialState;
+            // Keep the custom config when resetting
+            return { 
+                ...initialState, 
+                pricing: state.pricing, 
+                deals: state.deals, 
+                tips: state.tips,
+                dealResponses: state.deals.map(deal => ({ id: deal.id, accepted: false, details: '' }))
+            };
+        case 'SET_CONFIG':
+            return { 
+                ...state, 
+                pricing: action.payload.pricing,
+                deals: action.payload.deals,
+                tips: action.payload.tips,
+                // Reset deal responses to match the new deals
+                dealResponses: action.payload.deals.map(deal => ({ id: deal.id, accepted: false, details: '' })),
+                isLoading: false 
+            };
         default:
             return state;
     }
@@ -87,6 +108,17 @@ const App: React.FC = () => {
         }
     };
 
+    const handleConfigFileUpload = async (file: File) => {
+        dispatch({ type: 'START_LOADING' });
+        try {
+            const config = await parseConfigFile(file);
+            dispatch({ type: 'SET_CONFIG', payload: config });
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error('An unknown error occurred');
+            dispatch({ type: 'SET_ERROR', payload: error.message });
+        }
+    };
+
     const renderStep = () => {
         if (state.isLoading) {
             return (
@@ -99,7 +131,7 @@ const App: React.FC = () => {
 
         switch (state.step) {
             case 'description':
-                return <JobDescriptionInput onSubmit={handleDescriptionSubmit} />;
+                return <JobDescriptionInput onSubmit={handleDescriptionSubmit} onFileUpload={handleConfigFileUpload} />;
             case 'form':
                 return <QuoteForm
                     jobDetails={state.jobDetails}
@@ -108,6 +140,7 @@ const App: React.FC = () => {
                 />;
             case 'deals':
                 return <DealsSection
+                    deals={state.deals}
                     dealResponses={state.dealResponses}
                     dispatch={dispatch}
                     jobDetails={state.jobDetails}
@@ -117,6 +150,9 @@ const App: React.FC = () => {
                 return <QuoteSummary
                     jobDetails={state.jobDetails}
                     dealResponses={state.dealResponses}
+                    pricing={state.pricing}
+                    deals={state.deals}
+                    tips={state.tips}
                     onNext={() => dispatch({ type: 'SET_STEP', payload: 'email' })}
                     onBack={() => dispatch({ type: 'SET_STEP', payload: 'deals' })}
                 />;
@@ -124,6 +160,9 @@ const App: React.FC = () => {
                 return <EmailQuote
                     jobDetails={state.jobDetails}
                     dealResponses={state.dealResponses}
+                    pricing={state.pricing}
+                    deals={state.deals}
+                    tips={state.tips}
                     onBack={() => dispatch({ type: 'SET_STEP', payload: 'summary' })}
                     onReset={() => dispatch({ type: 'RESET' })}
                 />;

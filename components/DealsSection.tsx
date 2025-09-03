@@ -1,21 +1,21 @@
 
 import React, { useState } from 'react';
-import type { DealResponse, AppAction, JobDetails } from '../types';
-import { DEALS } from '../constants';
+import type { Deal, DealResponse, AppAction, JobDetails } from '../types';
 import { Modal } from './common/Modal';
 
 interface DealsSectionProps {
+    deals: Deal[];
     dealResponses: DealResponse[];
     dispatch: React.Dispatch<AppAction>;
     jobDetails: JobDetails;
     onComplete: () => void;
 }
 
-export const DealsSection: React.FC<DealsSectionProps> = ({ dealResponses, dispatch, jobDetails, onComplete }) => {
+export const DealsSection: React.FC<DealsSectionProps> = ({ deals, dealResponses, dispatch, jobDetails, onComplete }) => {
     const [modalDealId, setModalDealId] = useState<string | null>(null);
 
     const handleToggle = (id: string, accepted: boolean) => {
-        const deal = DEALS.find(d => d.id === id);
+        const deal = deals.find(d => d.id === id);
         let requiresFollowUp = false;
         if (typeof deal?.requiresFollowUp === 'function') {
             requiresFollowUp = deal.requiresFollowUp(jobDetails);
@@ -32,7 +32,7 @@ export const DealsSection: React.FC<DealsSectionProps> = ({ dealResponses, dispa
     };
     
     const handleModalSubmit = (id: string, details?: string | number | { sofas: number; loveSeats: number; armchairs: number; }) => {
-        const deal = DEALS.find(d => d.id === id);
+        const deal = deals.find(d => d.id === id);
         let detailsForResponse: string | number = '';
 
         if (deal?.followUpType === 'number' && deal.followUpTarget) {
@@ -52,7 +52,7 @@ export const DealsSection: React.FC<DealsSectionProps> = ({ dealResponses, dispa
         setModalDealId(null);
     };
 
-    const currentDeal = DEALS.find(d => d.id === modalDealId);
+    const currentDeal = deals.find(d => d.id === modalDealId);
 
     return (
         <div>
@@ -60,7 +60,7 @@ export const DealsSection: React.FC<DealsSectionProps> = ({ dealResponses, dispa
             <p className="text-gray-600 mb-6">Please answer yes or no to the following offers.</p>
 
             <div className="space-y-4">
-                {DEALS.map(deal => {
+                {deals.map(deal => {
                     const response = dealResponses.find(r => r.id === deal.id);
                     return (
                         <div key={deal.id} className="p-4 border border-gray-200 rounded-lg shadow-sm bg-gray-50">

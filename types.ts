@@ -1,4 +1,6 @@
 
+import { PRICING, DEALS } from './constants';
+
 export interface AreaRug {
     id: number;
     sqft: number;
@@ -39,12 +41,20 @@ export interface DealResponse {
     details: string | number;
 }
 
+export interface Tip {
+    title: string;
+    description: string;
+}
+
 export interface AppState {
     step: 'description' | 'form' | 'deals' | 'summary' | 'email';
     jobDetails: JobDetails;
     dealResponses: DealResponse[];
     isLoading: boolean;
     error: string | null;
+    pricing: typeof PRICING;
+    deals: Deal[];
+    tips: Tip[];
 }
 
 export type AppAction =
@@ -54,4 +64,5 @@ export type AppAction =
     | { type: 'UPDATE_JOB_DETAIL'; payload: { key: keyof JobDetails; value: any } }
     | { type: 'SET_DEAL_RESPONSES'; payload: DealResponse[] }
     | { type: 'SET_ERROR'; payload: string | null }
-    | { type: 'RESET' };
+    | { type: 'RESET' }
+    | { type: 'SET_CONFIG'; payload: { pricing: typeof PRICING; deals: Deal[]; tips: Tip[] } };

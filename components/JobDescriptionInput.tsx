@@ -1,15 +1,18 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSpeech } from '../hooks/useSpeech';
 import { Icon } from './common/Icon';
 
 interface JobDescriptionInputProps {
     onSubmit: (description: string) => void;
+    onFileUpload: (file: File) => void;
 }
 
-export const JobDescriptionInput: React.FC<JobDescriptionInputProps> = ({ onSubmit }) => {
+export const JobDescriptionInput: React.FC<JobDescriptionInputProps> = ({ onSubmit, onFileUpload }) => {
     const { isListening, transcript, startListening, stopListening, setTranscript } = useSpeech();
     const [text, setText] = useState('');
+    const [uploadStatus, setUploadStatus] = useState('');
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         setText(transcript);
@@ -26,6 +29,21 @@ export const JobDescriptionInput: React.FC<JobDescriptionInputProps> = ({ onSubm
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSubmit(text);
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            onFileUpload(file);
+            setUploadStatus(`File "${file.name}" uploaded successfully!`);
+            setTimeout(() => setUploadStatus(''), 4000);
+        }
+        // Reset file input to allow uploading the same file again
+        e.target.value = '';
+    };
+
+    const handleUploadClick = () => {
+        fileInputRef.current?.click();
     };
 
     return (
@@ -53,6 +71,7 @@ export const JobDescriptionInput: React.FC<JobDescriptionInputProps> = ({ onSubm
                         type="button"
                         onClick={handleMicClick}
                         className={`absolute top-1/2 right-4 -translate-y-1/2 p-3 rounded-full transition-colors duration-200 ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                        aria-label={isListening ? 'Stop listening' : 'Start listening'}
                     >
                         <Icon name={isListening ? 'micOff' : 'mic'} size={24} />
                     </button>
@@ -64,6 +83,23 @@ export const JobDescriptionInput: React.FC<JobDescriptionInputProps> = ({ onSubm
                     Continue
                 </button>
             </form>
+
+            <div className="mt-6 w-full max-w-lg">
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    className="hidden"
+                    accept=".xlsx, .xls"
+                />
+                <button
+                    onClick={handleUploadClick}
+                    className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-4 rounded-xl transition-colors duration-200 text-base"
+                >
+                    Upload Custom Config (.xlsx)
+                </button>
+                {uploadStatus && <p className="text-green-600 mt-2 text-sm">{uploadStatus}</p>}
+            </div>
         </div>
     );
 };

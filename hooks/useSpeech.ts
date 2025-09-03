@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 interface SpeechRecognition extends EventTarget {
@@ -76,7 +75,23 @@ export const useSpeech = () => {
     const speak = useCallback((text: string) => {
         if (typeof window !== 'undefined' && window.speechSynthesis) {
             const utterance = new SpeechSynthesisUtterance(text);
-            window.speechSynthesis.speak(utterance);
+            
+            const speakNow = () => {
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utterance);
+            };
+
+            // Voices may not be loaded initially. If they are, speak immediately.
+            // Otherwise, wait for the voices to be loaded.
+            if (window.speechSynthesis.getVoices().length > 0) {
+                speakNow();
+            } else {
+                window.speechSynthesis.onvoiceschanged = () => {
+                    speakNow();
+                    // Clean up the handler to prevent it from being called again.
+                    window.speechSynthesis.onvoiceschanged = null;
+                };
+            }
         }
     }, []);
 

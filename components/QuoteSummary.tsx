@@ -1,10 +1,13 @@
 import React, { useMemo } from 'react';
-import type { JobDetails, DealResponse } from '../types';
-import { PRICING, DEALS } from '../constants';
+import type { JobDetails, DealResponse, Deal, Tip } from '../types';
+import type { PRICING as PricingType } from '../constants';
 
 interface QuoteSummaryProps {
     jobDetails: JobDetails;
     dealResponses: DealResponse[];
+    pricing: typeof PricingType;
+    deals: Deal[];
+    tips: Tip[];
     onNext: () => void;
     onBack: () => void;
     isPreview?: boolean;
@@ -14,18 +17,18 @@ const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 };
 
-export const QuoteSummary: React.FC<QuoteSummaryProps> = ({ jobDetails, dealResponses, onNext, onBack, isPreview = false }) => {
+export const QuoteSummary: React.FC<QuoteSummaryProps> = ({ jobDetails, dealResponses, pricing, deals, tips, onNext, onBack, isPreview = false }) => {
     const calculation = useMemo(() => {
         let subtotal = 0;
         const breakdown: { item: string, cost: number }[] = [];
         
         // Base carpet cleaning
         if (jobDetails.sqft > 0) {
-            subtotal += PRICING.BASE_RATE;
-            breakdown.push({ item: `Carpet Cleaning (up to ${PRICING.BASE_SQFT} sq ft)`, cost: PRICING.BASE_RATE });
-            if (jobDetails.sqft > PRICING.BASE_SQFT) {
-                const extraSqft = jobDetails.sqft - PRICING.BASE_SQFT;
-                const extraCost = extraSqft * PRICING.ADDITIONAL_SQFT_RATE;
+            subtotal += pricing.BASE_RATE;
+            breakdown.push({ item: `Carpet Cleaning (up to ${pricing.BASE_SQFT} sq ft)`, cost: pricing.BASE_RATE });
+            if (jobDetails.sqft > pricing.BASE_SQFT) {
+                const extraSqft = jobDetails.sqft - pricing.BASE_SQFT;
+                const extraCost = extraSqft * pricing.ADDITIONAL_SQFT_RATE;
                 subtotal += extraCost;
                 breakdown.push({ item: `Additional ${extraSqft} sq ft`, cost: extraCost });
             }
@@ -33,16 +36,16 @@ export const QuoteSummary: React.FC<QuoteSummaryProps> = ({ jobDetails, dealResp
 
         // Other services
         const services = [
-            { condition: jobDetails.distance > PRICING.DISTANCE_BASE_MILES, cost: (jobDetails.distance - PRICING.DISTANCE_BASE_MILES) * PRICING.DISTANCE_RATE_PER_MILE, item: `Distance Surcharge (${jobDetails.distance} miles)` },
-            { condition: jobDetails.petTreatmentRooms > 0, cost: jobDetails.petTreatmentRooms * PRICING.PET_TREATMENT_PER_ROOM, item: `Pet Treatment (${jobDetails.petTreatmentRooms} rooms)` },
-            { condition: jobDetails.largeItems > 0, cost: jobDetails.largeItems * PRICING.LARGE_ITEM_MOVE, item: `Large Items Moved (${jobDetails.largeItems})` },
-            { condition: jobDetails.smallItems > 0, cost: jobDetails.smallItems * PRICING.SMALL_ITEM_MOVE, item: `Small/Medium Items Moved (${jobDetails.smallItems})` },
-            { condition: jobDetails.floors > 1, cost: (jobDetails.floors - 1) * PRICING.FLOOR_SURCHARGE, item: `Multi-floor Surcharge (${jobDetails.floors} floors)` },
-            { condition: jobDetails.petStainSpots > 0, cost: jobDetails.petStainSpots * PRICING.STAIN_SPOT, item: `Pet Stain Spots (${jobDetails.petStainSpots})` },
-            { condition: jobDetails.stainGuardRooms > 0, cost: jobDetails.stainGuardRooms * PRICING.STAIN_GUARD_PER_ROOM, item: `Stain-Guard (${jobDetails.stainGuardRooms} rooms)` },
-            { condition: jobDetails.sofas > 0, cost: jobDetails.sofas * PRICING.SOFA_CLEANING, item: `Sofa Cleaning (${jobDetails.sofas})` },
-            { condition: jobDetails.loveSeats > 0, cost: jobDetails.loveSeats * PRICING.LOVESEAT_CLEANING, item: `Loveseat Cleaning (${jobDetails.loveSeats})` },
-            { condition: jobDetails.armchairs > 0, cost: jobDetails.armchairs * PRICING.ARMCHAIR_CLEANING, item: `Armchair Cleaning (${jobDetails.armchairs})` },
+            { condition: jobDetails.distance > pricing.DISTANCE_BASE_MILES, cost: (jobDetails.distance - pricing.DISTANCE_BASE_MILES) * pricing.DISTANCE_RATE_PER_MILE, item: `Distance Surcharge (${jobDetails.distance} miles)` },
+            { condition: jobDetails.petTreatmentRooms > 0, cost: jobDetails.petTreatmentRooms * pricing.PET_TREATMENT_PER_ROOM, item: `Pet Treatment (${jobDetails.petTreatmentRooms} rooms)` },
+            { condition: jobDetails.largeItems > 0, cost: jobDetails.largeItems * pricing.LARGE_ITEM_MOVE, item: `Large Items Moved (${jobDetails.largeItems})` },
+            { condition: jobDetails.smallItems > 0, cost: jobDetails.smallItems * pricing.SMALL_ITEM_MOVE, item: `Small/Medium Items Moved (${jobDetails.smallItems})` },
+            { condition: jobDetails.floors > 1, cost: (jobDetails.floors - 1) * pricing.FLOOR_SURCHARGE, item: `Multi-floor Surcharge (${jobDetails.floors} floors)` },
+            { condition: jobDetails.petStainSpots > 0, cost: jobDetails.petStainSpots * pricing.STAIN_SPOT, item: `Pet Stain Spots (${jobDetails.petStainSpots})` },
+            { condition: jobDetails.stainGuardRooms > 0, cost: jobDetails.stainGuardRooms * pricing.STAIN_GUARD_PER_ROOM, item: `Stain-Guard (${jobDetails.stainGuardRooms} rooms)` },
+            { condition: jobDetails.sofas > 0, cost: jobDetails.sofas * pricing.SOFA_CLEANING, item: `Sofa Cleaning (${jobDetails.sofas})` },
+            { condition: jobDetails.loveSeats > 0, cost: jobDetails.loveSeats * pricing.LOVESEAT_CLEANING, item: `Loveseat Cleaning (${jobDetails.loveSeats})` },
+            { condition: jobDetails.armchairs > 0, cost: jobDetails.armchairs * pricing.ARMCHAIR_CLEANING, item: `Armchair Cleaning (${jobDetails.armchairs})` },
         ];
 
         services.forEach(service => {
@@ -53,7 +56,7 @@ export const QuoteSummary: React.FC<QuoteSummaryProps> = ({ jobDetails, dealResp
         });
 
         jobDetails.areaRugs.forEach((rug, i) => {
-            const cost = rug.sqft * PRICING.AREA_RUG_PER_SQFT;
+            const cost = rug.sqft * pricing.AREA_RUG_PER_SQFT;
             subtotal += cost;
             breakdown.push({ item: `Area Rug #${i + 1} (${rug.sqft} sq ft)`, cost });
         });
@@ -67,17 +70,17 @@ export const QuoteSummary: React.FC<QuoteSummaryProps> = ({ jobDetails, dealResp
         
         // Membership discount
         if (jobDetails.membership === '1-year') {
-            const discount = subtotal * PRICING.MEMBERSHIP_YEAR_DISCOUNT;
+            const discount = subtotal * pricing.MEMBERSHIP_YEAR_DISCOUNT;
             totalDiscount += discount;
             discountSummary.push({ item: '1-Year Membership Discount (15%)', saving: discount });
         } else if (jobDetails.membership === '6-month') {
-            const discount = subtotal * PRICING.MEMBERSHIP_6_MONTH_DISCOUNT;
+            const discount = subtotal * pricing.MEMBERSHIP_6_MONTH_DISCOUNT;
             totalDiscount += discount;
             discountSummary.push({ item: '6-Month Membership Discount (10%)', saving: discount });
         }
 
         // Deal discounts
-        const acceptedDeals = dealResponses.filter(dr => dr.accepted).map(dr => DEALS.find(d => d.id === dr.id));
+        const acceptedDeals = dealResponses.filter(dr => dr.accepted).map(dr => deals.find(d => d.id === dr.id));
         
         // Handle exclusive deals first
         const exclusiveDeal25 = acceptedDeals.find(d => d?.id === 'bundle2');
@@ -114,12 +117,12 @@ export const QuoteSummary: React.FC<QuoteSummaryProps> = ({ jobDetails, dealResp
         const finalTotal = Math.max(0, subtotal - totalDiscount);
 
         return { subtotal, totalDiscount, finalTotal, breakdown, discountSummary };
-    }, [jobDetails, dealResponses]);
+    }, [jobDetails, dealResponses, pricing, deals]);
 
     const notes = dealResponses
         .filter(dr => dr.accepted && dr.details)
         .map(dr => {
-            const deal = DEALS.find(d => d.id === dr.id);
+            const deal = deals.find(d => d.id === dr.id);
             return { title: deal?.title || 'Note', detail: dr.details };
         });
 
@@ -173,11 +176,25 @@ export const QuoteSummary: React.FC<QuoteSummaryProps> = ({ jobDetails, dealResp
                 <p className="text-5xl font-extrabold tracking-tight font-mono">{formatCurrency(calculation.finalTotal)}</p>
             </div>
             
+            {tips.length > 0 && (
+                <div className="bg-yellow-50 p-6 rounded-xl shadow-md">
+                    <h4 className="font-bold text-xl mb-4 text-yellow-800">Helpful Tips & Recommendations</h4>
+                    <ul className="space-y-3">
+                        {tips.map((tip, i) => (
+                            <li key={i} className="text-yellow-900">
+                                <strong className="block">{tip.title}</strong>
+                                <p className="text-sm">{tip.description}</p>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-gray-50 p-4 rounded-lg">
                     <h4 className="font-bold text-lg mb-2">Upsell Responses</h4>
                     <ul className="space-y-1 text-sm">
-                        {DEALS.map(deal => {
+                        {deals.map(deal => {
                             const response = dealResponses.find(r => r.id === deal.id);
                             return (
                                 <li key={deal.id} className="flex justify-between">

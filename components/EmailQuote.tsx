@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { QuoteSummary } from './QuoteSummary';
-import type { JobDetails, DealResponse } from '../types';
+import type { JobDetails, DealResponse, Deal, Tip } from '../types';
+import type { PRICING as PricingType } from '../constants';
 import { Icon } from './common/Icon';
 
 declare const jspdf: any;
@@ -9,11 +10,14 @@ declare const html2canvas: any;
 interface EmailQuoteProps {
     jobDetails: JobDetails;
     dealResponses: DealResponse[];
+    pricing: typeof PricingType;
+    deals: Deal[];
+    tips: Tip[];
     onBack: () => void;
     onReset: () => void;
 }
 
-export const EmailQuote: React.FC<EmailQuoteProps> = ({ jobDetails, dealResponses, onBack, onReset }) => {
+export const EmailQuote: React.FC<EmailQuoteProps> = ({ jobDetails, dealResponses, pricing, deals, tips, onBack, onReset }) => {
     const [email, setEmail] = useState('');
     const [subject, setSubject] = useState('Your Carpet Cleaning Quote');
     const [body, setBody] = useState('Please find your detailed quote attached.');
@@ -119,6 +123,9 @@ export const EmailQuote: React.FC<EmailQuoteProps> = ({ jobDetails, dealResponse
                            <QuoteSummary 
                                 jobDetails={jobDetails} 
                                 dealResponses={dealResponses} 
+                                pricing={pricing}
+                                deals={deals}
+                                tips={tips}
                                 onNext={dummyFunc} 
                                 onBack={dummyFunc} 
                                 isPreview={true}
