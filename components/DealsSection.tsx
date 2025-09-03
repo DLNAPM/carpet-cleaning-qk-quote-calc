@@ -31,17 +31,23 @@ export const DealsSection: React.FC<DealsSectionProps> = ({ dealResponses, dispa
         }
     };
     
-    const handleModalSubmit = (id: string, details?: string | number) => {
+    const handleModalSubmit = (id: string, details?: string | number | { sofas: number; loveSeats: number; armchairs: number; }) => {
         const deal = DEALS.find(d => d.id === id);
+        let detailsForResponse: string | number = '';
+
         if (deal?.followUpType === 'number' && deal.followUpTarget) {
             dispatch({ type: 'UPDATE_JOB_DETAIL', payload: { key: deal.followUpTarget, value: details } });
-        } else if (deal?.followUpType === 'upholstery' && typeof details === 'object' && details !== null) {
+            detailsForResponse = typeof details === 'number' ? details : '';
+        } else if (deal?.followUpType === 'upholstery' && typeof details === 'object' && details !== null && 'sofas' in details) {
             Object.entries(details).forEach(([key, value]) => {
                 dispatch({type: 'UPDATE_JOB_DETAIL', payload: { key: key as keyof JobDetails, value: value }});
             });
+            detailsForResponse = `Sofas: ${details.sofas}, Love Seats: ${details.loveSeats}, Armchairs: ${details.armchairs}`;
+        } else if (typeof details === 'string' || typeof details === 'number') {
+            detailsForResponse = details;
         }
         
-        const updatedResponses = dealResponses.map(r => r.id === id ? { ...r, details: details || '' } : r);
+        const updatedResponses = dealResponses.map(r => r.id === id ? { ...r, details: detailsForResponse } : r);
         dispatch({ type: 'SET_DEAL_RESPONSES', payload: updatedResponses });
         setModalDealId(null);
     };
